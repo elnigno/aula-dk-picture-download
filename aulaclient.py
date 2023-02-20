@@ -1,5 +1,4 @@
 # aulaclient.py
-# Inspired by https://helmstedt.dk/2021/05/aulas-api-en-opdatering/
 
 import requests
 

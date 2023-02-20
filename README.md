@@ -14,6 +14,7 @@ Accepted parameters:
 The script saves images in folders, grouping them by album/post/message. The folders names follow this template: "<YYYY-MM-DD> <Title>"
 
 Tested to work on Windows 10, after logging into aula.dk with Firefox.
+This script was initially inspired by this blog post: https://helmstedt.dk/2021/05/aulas-api-en-opdatering/
 
 ## Usage Example
 ```bash
