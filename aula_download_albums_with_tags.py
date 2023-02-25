@@ -123,7 +123,7 @@ def getAlbumsToDownloadFromMessages():
     return albumsToDownload
 
 # Parse arguments
-parser = argparse.ArgumentParser(description='Dowload images from aula.dk.')
+parser = argparse.ArgumentParser(description='Download images from aula.dk.')
 parser.add_argument('--cutoffDate', required=True, help='Only download images that have been posted on or after this date (format: "YYYY-MM-DD")')
 parser.add_argument('--tags', required=True, nargs='+', help='only download pictures having at least one of these tags')
 parser.add_argument('--outputFolder', required=True, default='output', help='download images in this folder')
