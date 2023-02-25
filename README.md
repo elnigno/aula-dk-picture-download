@@ -6,11 +6,13 @@ This script downloads images in albums, posts and messages from aula.dk.
 
 For it to work, you must first **log into aula.dk with your browser**.
 
+options:
+
 Accepted parameters:
 
-- `--cutoffDate` (in ISO format "YYYY-MM-DD"): only download images that have been posted on or after this date [required].
-- `--tags`: only download having these comma separated tags [required].
-- `--outputFolder`: download images in this folder
+- `--cutoffDate CUTOFFDATE` Only download images that have been posted on or after this date (format: "YYYY-MM-DD")
+- `--tags TAGS [TAGS ...]` Only download pictures having at least one of these tags
+- `--outputFolder OUTPUTFOLDER` Download images in this folder
 
 The script saves images in folders, grouping them by album/post/message. The folders names follow the template "Date Title", where the date is in ISO format (yyyymmdd) and the title is the album/post/message title.
 
