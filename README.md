@@ -12,7 +12,7 @@ Accepted parameters:
 - `--tags`: only download having these comma separated tags [required].
 - `--outputFolder`: download images in this folder
 
-The script saves images in folders, grouping them by album/post/message. The folders names follow this template: "<YYYY-MM-DD> <Title>"
+The script saves images in folders, grouping them by album/post/message. The folders names follow the template "Date Title", where the date is in ISO format (yyyymmdd) and the title is the album/post/message title.
 
 Tested to work on Windows 10, after logging into aula.dk with Firefox.
 
