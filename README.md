@@ -6,8 +6,6 @@ This script downloads images in albums, posts and messages from aula.dk.
 
 For it to work, you must first **log into aula.dk with your browser**.
 
-options:
-
 Accepted parameters:
 
 - `--cutoffDate CUTOFFDATE` Only download images that have been posted on or after this date (format: "YYYY-MM-DD")
