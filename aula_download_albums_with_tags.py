@@ -1,10 +1,10 @@
 import os
-import sys
 import requests
 import browser_cookie3
 import piexif
 import argparse
 from rich.progress import track
+from rich.console import Console
 from datetime import datetime
 from aulaclient import AulaClient
 
@@ -122,6 +122,16 @@ def getAlbumsToDownloadFromMessages():
                 albumsToDownload.append(pa)
     return albumsToDownload
 
+def printArguments(cutoffDate, tagsToFind, outputDirectory):
+    paramStyle="cyan"
+    console.print("Parameters:", style=paramStyle)
+    console.print(f"  cutoffDate: {cutoffDate.strftime('%Y-%m-%d')}", style=paramStyle)
+    console.print(f"  tags: {tagsToFind.__str__()}", style=paramStyle)
+    console.print(f"  outputDirectory: {outputDirectory}", style=paramStyle)
+    console.print()
+
+console = Console()
+
 # Parse arguments
 parser = argparse.ArgumentParser(description='Download images from aula.dk.')
 parser.add_argument('--cutoffDate', required=True, help='Only download images that have been posted on or after this date (format: "YYYY-MM-DD")')
@@ -132,15 +142,19 @@ args = parser.parse_args()
 cutoffDate = datetime.fromisoformat(args.cutoffDate).date()
 tagsToFind = args.tags
 outputDirectory = args.outputFolder
-print(f"cutoffDate: {cutoffDate.strftime('%Y-%m-%d')}")
-print(f"tags: {tagsToFind.__str__()}")
-print(f"outputDirectory: {outputDirectory}")
+printArguments(cutoffDate, tagsToFind, outputDirectory)
 
 # Init Aula client
 aulaCookies = browser_cookie3.firefox(domain_name='aula.dk')
 client = AulaClient(aulaCookies)
 
-profiles = client.getProfiles()
+try:
+    profiles = client.getProfiles()
+except Exception as error:
+    console.print(error, style="red")
+    console.print("Could not get profiles, exiting.", style="red")
+    exit()
+
 institutionProfileIds = list(map(lambda p: p['id'], profiles[0]['institutionProfiles']))
 childrenIds = list(map(lambda p: p['id'], profiles[0]['children']))
 
