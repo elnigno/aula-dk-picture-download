@@ -16,6 +16,9 @@ class AulaClient:
         }
 
         response_profile = self.__sendRequest(params)
+        if response_profile['status']['code'] == 448:
+            raise Exception("Cannot request profile, could be due to expired or missing cookies; try to log in.")
+
         return response_profile['data']['profiles']
 
     def getThreads(self, customParams = {}):
