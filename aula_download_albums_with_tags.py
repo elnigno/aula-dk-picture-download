@@ -130,6 +130,27 @@ def printArguments(cutoffDate, tagsToFind, outputDirectory):
     console.print(f"  outputDirectory: {outputDirectory}", style=paramStyle)
     console.print()
 
+def tryAppendAulaCookies(aulaCookies, browserName, cookieCallback):
+    try:
+        cookies = cookieCallback()
+        aulaCookies.append(cookies)
+        console.print(f"{browserName} cookies: [green]found[/]")
+    except browser_cookie3.BrowserCookieError as error:
+        console.print(f"{browserName} cookies: [yellow]not found[/]")
+
+def getAulaCookies():
+    aulaCookies = []
+    tryAppendAulaCookies(aulaCookies, 'Chrome', lambda: browser_cookie3.chrome(domain_name='aula.dk'))
+    tryAppendAulaCookies(aulaCookies, 'Chromium', lambda: browser_cookie3.chromium(domain_name='aula.dk'))
+    tryAppendAulaCookies(aulaCookies, 'Opera', lambda: browser_cookie3.opera(domain_name='aula.dk'))
+    tryAppendAulaCookies(aulaCookies, 'Opera GX', lambda: browser_cookie3.opera_gx(domain_name='aula.dk'))
+    tryAppendAulaCookies(aulaCookies, 'Brave', lambda: browser_cookie3.brave(domain_name='aula.dk'))
+    tryAppendAulaCookies(aulaCookies, 'Edge', lambda: browser_cookie3.edge(domain_name='aula.dk'))
+    tryAppendAulaCookies(aulaCookies, 'Vivaldi', lambda: browser_cookie3.vivaldi(domain_name='aula.dk'))
+    tryAppendAulaCookies(aulaCookies, 'Firefox', lambda: browser_cookie3.firefox(domain_name='aula.dk'))
+    tryAppendAulaCookies(aulaCookies, 'Safari', lambda: browser_cookie3.safari(domain_name='aula.dk'))
+    return aulaCookies
+
 console = Console()
 
 # Parse arguments
@@ -145,7 +166,7 @@ outputDirectory = args.outputFolder
 printArguments(cutoffDate, tagsToFind, outputDirectory)
 
 # Init Aula client
-aulaCookies = browser_cookie3.firefox(domain_name='aula.dk')
+aulaCookies = getAulaCookies()
 client = AulaClient(aulaCookies)
 
 try:

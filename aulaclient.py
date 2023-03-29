@@ -8,14 +8,19 @@ class AulaClient:
 
     def __init__(self, cookies):
         self.session = requests.Session()
-        self.session.cookies = cookies
+        self.allCookies = cookies
 
     def getProfiles(self):
         params = {
             'method': 'profiles.getProfilesByLogin'
         }
 
-        response_profile = self.__sendRequest(params)
+        for cookies in self.allCookies:
+            self.session.cookies = cookies
+            response_profile = self.__sendRequest(params)
+            if response_profile['status']['code'] != 448:
+                break
+
         if response_profile['status']['code'] == 448:
             raise Exception("Cannot request profile, could be due to expired or missing cookies; try to log in.")
 
