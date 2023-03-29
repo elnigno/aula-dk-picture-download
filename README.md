@@ -14,7 +14,7 @@ Accepted parameters:
 
 The script saves images in folders, grouping them by album/post/message. The folders names follow the template "Date Title", where the date is in ISO format (yyyymmdd) and the title is the album/post/message title.
 
-Tested to work on Windows 10, after logging into aula.dk with Firefox.
+Tested to work on Windows 10, after logging into aula.dk with Firefox and Chrome.
 
 This script was initially inspired by this blog post: https://helmstedt.dk/2021/05/aulas-api-en-opdatering/
 
