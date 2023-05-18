@@ -125,9 +125,10 @@ def getAlbumsToDownloadFromMessages():
 def printArguments(cutoffDate, tagsToFind, outputDirectory):
     paramStyle="cyan"
     console.print("Parameters:", style=paramStyle)
-    console.print(f"  cutoffDate: {cutoffDate.strftime('%Y-%m-%d')}", style=paramStyle)
-    console.print(f"  tags: {tagsToFind.__str__()}", style=paramStyle)
     console.print(f"  outputDirectory: {outputDirectory}", style=paramStyle)
+    console.print(f"  cutoffDate: {cutoffDate.strftime('%Y-%m-%d')}", style=paramStyle)
+    if (tagsToFind):
+        console.print(f"  tags: {tagsToFind.__str__()}", style=paramStyle)
     console.print()
 
 def tryAppendAulaCookies(aulaCookies, browserName, cookieCallback):
@@ -155,9 +156,9 @@ console = Console()
 
 # Parse arguments
 parser = argparse.ArgumentParser(description='Download images from aula.dk.')
-parser.add_argument('--cutoffDate', required=True, help='Only download images that have been posted on or after this date (format: "YYYY-MM-DD")')
-parser.add_argument('--tags', required=True, nargs='+', help='Only download pictures having at least one of these tags')
 parser.add_argument('--outputFolder', required=True, default='output', help='Download images in this folder')
+parser.add_argument('--cutoffDate', required=True, help='Only download images that have been posted on or after this date (format: "YYYY-MM-DD")')
+parser.add_argument('--tags', required=False, nargs='+', help='Only download pictures having at least one of these tags')
 args = parser.parse_args()
 
 cutoffDate = datetime.fromisoformat(args.cutoffDate).date()
@@ -190,7 +191,7 @@ for album in track(albumsToDownload, "Albums to download..."):
         continue
     print('>', album, end = ' ', flush = True)
     for picture in album.pictures:
-        if picture['tags'] and pictureHasTags(picture, tagsToFind):
+        if not tagsToFind or (picture['tags'] and pictureHasTags(picture, tagsToFind)):
             albumDirectoryName = album.creationDate.strftime('%Y%m%d') + ' ' + album.name
             albumDirectoryPath = os.path.join(outputDirectory, albumDirectoryName)
             file = picture['file']
