@@ -5,7 +5,7 @@ from rich.console import Console
 
 class CookieFetcher:
     def tryAppendAulaCookies(self, aulaCookies, browserName):
-        result = 'notFound'
+        result = ''
         try:
             cookies = self.getCookiesFromBrowser(browserName)
             if (cookies):
@@ -13,20 +13,22 @@ class CookieFetcher:
                 result = 'found'
             else:
                 result = 'notFound'
-        except browser_cookie3.BrowserCookieError as error:
+        except browser_cookie3.BrowserCookieError:
             result = 'notFound'
         except:
             result = 'error'
 
-        console = Console()
         if result == 'notFound':
-            console.print(f"{browserName} cookies: [yellow]not found[/]")
+            message = "[yellow]not found[/]"
         elif result == 'found':
-            console.print(f"{browserName} cookies: [green]found[/]")
+            message = "[green]found[/]"
         elif result == 'error':
-            console.print(f"{browserName} cookies: [red]Error occured[/]")
+            message = "[red]error occured[/]"
         else:
-            console.print(f"{browserName} cookies: [redUnknown error occured[/]")
+            message = "[red]unknown error occured[/]"
+
+        console = Console()
+        console.print(f"{browserName} cookies: {message}")
 
     def getCookiesFromBrowser(self, browserName):
         domain = 'aula.dk'
