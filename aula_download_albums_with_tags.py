@@ -10,135 +10,135 @@ from cookiefetcher import CookieFetcher
 
 
 class AlbumToDownload:
-    def __init__(self, name, type, creationDate, pictures):
+    def __init__(self, name, album_type, creation_date, pictures):
         self.name = name
-        self.type = type
-        self.creationDate = creationDate
+        self.album_type = album_type
+        self.creationDate = creation_date
         self.pictures = pictures
 
     def __str__(self):
-        return f"Type: {self.type}, CreationDate: {self.creationDate}, Pictures: {len(self.pictures)}, Name: {self.name}"
+        return f"Type: {self.album_type}, CreationDate: {self.creationDate}, Pictures: {len(self.pictures)}, Name: {self.name}"
 
 
-def parseDate(dateString):
-    return datetime.strptime(dateString.split('T')[0], '%Y-%m-%d').date()
+def parse_date(date_string):
+    return datetime.strptime(date_string.split('T')[0], '%Y-%m-%d').date()
 
 
-def parseDateTime(dateString):
-    return datetime.strptime(dateString, '%Y-%m-%dT%H:%M:%S%z')
+def parse_datetime(date_string):
+    return datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%S%z')
 
 
-def cleanTitle(title):
+def clean_title(title):
     return title.strip().replace('/', '_').replace(':', '_').replace('?', '_')
 
 
-def pictureHasTags(picture, tags):
-    pictureTags = list(map(lambda t: t['name'], picture['tags']))
+def picture_has_tags(picture, tags):
+    picture_tags = list(map(lambda t: t['name'], picture['tags']))
     for tag in tags:
-        if tag in pictureTags:
+        if tag in picture_tags:
             return True
     return False
 
 
-def addExifCreationTime(imagePath, creationTime):
-    isJpeg = imagePath.lower().endswith(('.jpg', '.jpeg'))
-    if isJpeg:
+def add_exif_creation_time(image_path, creation_time):
+    is_jpeg = image_path.lower().endswith(('.jpg', '.jpeg'))
+    if is_jpeg:
         zeroth_ifd = {
-            piexif.ImageIFD.DateTime: creationTime.strftime('%Y:%m:%d %H:%M:%S'),
+            piexif.ImageIFD.DateTime: creation_time.strftime('%Y:%m:%d %H:%M:%S'),
         }
         exif_ifd = {
-            piexif.ExifIFD.DateTimeOriginal: creationTime.strftime('%Y:%m:%d %H:%M:%S'),
+            piexif.ExifIFD.DateTimeOriginal: creation_time.strftime('%Y:%m:%d %H:%M:%S'),
         }
         exif_dict = {"0th": zeroth_ifd, "Exif": exif_ifd}
         exif_bytes = piexif.dump(exif_dict)
-        piexif.insert(exif_bytes, imagePath)
+        piexif.insert(exif_bytes, image_path)
 
 
-def getAlbumsToDownloadFromGallery(institutionProfileIds):
+def get_albums_to_download_from_gallery(institution_profile_ids):
     print('Get Albums...')
-    additionalParams = {'limit': 1000}
-    albumsToDownload = []
-    albums = client.getAlbums(institutionProfileIds, additionalParams)
-    albumsWithId = list(filter(lambda a: a['id'] is not None, albums))
-    for album in albumsWithId:
-        creationDate = parseDate(album['creationDate'])
-        isAlbumCreatedAfterCutoffDate = creationDate >= cutoffDate
-        if not isAlbumCreatedAfterCutoffDate:
+    additional_params = {'limit': 1000}
+    albums_to_download = []
+    albums = client.get_albums(institution_profile_ids, additional_params)
+    albums_with_id = list(filter(lambda a: a['id'] is not None, albums))
+    for album in albums_with_id:
+        creation_date = parse_date(album['creationDate'])
+        is_album_created_after_cutoff_date = creation_date >= cutoffDate
+        if not is_album_created_after_cutoff_date:
             continue
-        pictures = client.getPictures(institutionProfileIds, album['id'], additionalParams)
+        pictures = client.get_pictures(institution_profile_ids, album['id'], additional_params)
         if pictures:
-            name = cleanTitle(album['title'])
-            pa = AlbumToDownload(name, "Album", creationDate, pictures)
-            albumsToDownload.append(pa)
-    return albumsToDownload
+            name = clean_title(album['title'])
+            pa = AlbumToDownload(name, "Album", creation_date, pictures)
+            albums_to_download.append(pa)
+    return albums_to_download
 
 
-def getAlbumsToDownloadFromPosts(institutionProfileIds, childrenIds):
+def get_albums_to_download_from_posts(institution_profile_ids, children_ids):
     print('Get Posts...')
-    additionalParams = {'limit': 1000}
-    albumsToDownload = []
-    getPostsinstitutionProfileIds = institutionProfileIds + childrenIds
-    posts = client.getPosts(getPostsinstitutionProfileIds, additionalParams)
+    additional_params = {'limit': 1000}
+    albums_to_download = []
+    get_posts_institution_profile_ids = institution_profile_ids + children_ids
+    posts = client.get_posts(get_posts_institution_profile_ids, additional_params)
     for post in posts:
-        creationDate = parseDate(post['publishAt'])
-        isPostAfterCutoffDate = creationDate >= cutoffDate
-        if not isPostAfterCutoffDate:
+        creation_date = parse_date(post['publishAt'])
+        is_post_after_cutoff_date = creation_date >= cutoffDate
+        if not is_post_after_cutoff_date:
             continue
-        attachmentsWithMedia = list(filter(lambda a: a['media'] is not None, post['attachments']))
-        if attachmentsWithMedia:
-            name = cleanTitle(post['title'])
-            pa = AlbumToDownload(name, "Post", creationDate, list(map(lambda x: x['media'], attachmentsWithMedia)))
-            albumsToDownload.append(pa)
-    return albumsToDownload
+        attachments_with_media = list(filter(lambda a: a['media'] is not None, post['attachments']))
+        if attachments_with_media:
+            name = clean_title(post['title'])
+            pa = AlbumToDownload(name, "Post", creation_date, list(map(lambda x: x['media'], attachments_with_media)))
+            albums_to_download.append(pa)
+    return albums_to_download
 
 
-def getAlbumsToDownloadFromMessages():
+def get_albums_to_download_from_messages():
     print('Get Threads...')
-    threadsPageParam = {'page': 0}
-    albumsToDownload = []
-    threadsResponse = client.getThreads(threadsPageParam)
-    threads = threadsResponse['threads']
-    while threadsResponse['moreMessagesExist']:
-        threadsPageParam['page'] += 1
-        threadsResponse = client.getThreads(threadsPageParam)
-        threads += threadsResponse['threads']
-        lastThreadUpdateTime = parseDateTime(threads[-1]['latestMessage']['sendDateTime'])
-        if lastThreadUpdateTime.date() < cutoffDate:
+    threads_page_param = {'page': 0}
+    albums_to_download = []
+    threads_response = client.get_threads(threads_page_param)
+    threads = threads_response['threads']
+    while threads_response['moreMessagesExist']:
+        threads_page_param['page'] += 1
+        threads_response = client.get_threads(threads_page_param)
+        threads += threads_response['threads']
+        last_thread_update_time = parse_datetime(threads[-1]['latestMessage']['sendDateTime'])
+        if last_thread_update_time.date() < cutoffDate:
             break
     for thread in threads:
-        threadId = thread['id']
-        threadLatestMessageTime = parseDateTime(thread['latestMessage']['sendDateTime'])
-        isThreadUpdatedAfterCutoffDate = threadLatestMessageTime.date() >= cutoffDate
-        if not isThreadUpdatedAfterCutoffDate:
+        thread_id = thread['id']
+        thread_latest_message_time = parse_datetime(thread['latestMessage']['sendDateTime'])
+        is_thread_updated_after_cutoff_date = thread_latest_message_time.date() >= cutoffDate
+        if not is_thread_updated_after_cutoff_date:
             break  # Following threads won't be updated either, exit
-        pageParam = {'page': 0}
-        messagesResponse = client.getMessagesForThread(threadId, pageParam)
-        messages = messagesResponse['messages']
-        while messagesResponse['moreMessagesExist']:
-            pageParam['page'] += 1
-            messagesResponse = client.getMessagesForThread(threadId, pageParam)
-            messages += messagesResponse['messages']
-        messagesWithAttachments = list(filter(lambda x: x['hasAttachments'], messages))
-        if len(messagesWithAttachments) == 0:
+        page_param = {'page': 0}
+        messages_response = client.get_messages_for_thread(thread_id, page_param)
+        messages = messages_response['messages']
+        while messages_response['moreMessagesExist']:
+            page_param['page'] += 1
+            messages_response = client.get_messages_for_thread(thread_id, page_param)
+            messages += messages_response['messages']
+        messages_with_attachments = list(filter(lambda x: x['hasAttachments'], messages))
+        if len(messages_with_attachments) == 0:
             continue
-        for messageIndex, message in enumerate(messagesWithAttachments):
-            attachmentsWithMedia = list(filter(lambda a: a['media'] is not None, message['attachments']))
-            name = f"{cleanTitle(thread['subject'])}_{messageIndex:02d}"
-            creationDate = parseDate(thread['startedTime'])
-            pictures = list(map(lambda x: x['media'], attachmentsWithMedia))
+        for message_index, message in enumerate(messages_with_attachments):
+            attachments_with_media = list(filter(lambda a: a['media'] is not None, message['attachments']))
+            name = f"{clean_title(thread['subject'])}_{message_index:02d}"
+            creation_date = parse_date(thread['startedTime'])
+            pictures = list(map(lambda x: x['media'], attachments_with_media))
             if pictures:
-                pa = AlbumToDownload(name, "Message", creationDate, pictures)
-                albumsToDownload.append(pa)
-    return albumsToDownload
+                pa = AlbumToDownload(name, "Message", creation_date, pictures)
+                albums_to_download.append(pa)
+    return albums_to_download
 
 
-def printArguments(cutoffDate, tagsToFind, outputDirectory):
-    paramStyle = "cyan"
-    console.print("Parameters:", style=paramStyle)
-    console.print(f"  outputDirectory: {outputDirectory}", style=paramStyle)
-    console.print(f"  cutoffDate: {cutoffDate.strftime('%Y-%m-%d')}", style=paramStyle)
-    if (tagsToFind):
-        console.print(f"  tags: {tagsToFind.__str__()}", style=paramStyle)
+def print_arguments(cutoff_ate, tags_to_find, output_directory):
+    param_style = "cyan"
+    console.print("Parameters:", style=param_style)
+    console.print(f"  outputDirectory: {output_directory}", style=param_style)
+    console.print(f"  cutoffDate: {cutoff_ate.strftime('%Y-%m-%d')}", style=param_style)
+    if tags_to_find:
+        console.print(f"  tags: {tags_to_find.__str__()}", style=param_style)
     console.print()
 
 
@@ -156,27 +156,27 @@ args = parser.parse_args()
 cutoffDate = datetime.fromisoformat(args.cutoffDate).date()
 tagsToFind = args.tags
 outputDirectory = args.outputFolder
-printArguments(cutoffDate, tagsToFind, outputDirectory)
+print_arguments(cutoffDate, tagsToFind, outputDirectory)
 
 # Init Aula client
 cookieFetcher = CookieFetcher()
-aulaCookies = cookieFetcher.getAulaCookies()
+aulaCookies = cookieFetcher.get_aula_cookies()
 client = AulaClient(aulaCookies)
 
 try:
-    profiles = client.getProfiles()
+    profiles = client.get_profiles()
 except Exception as error:
     console.print(error, style="red")
     console.print("Could not get profiles, exiting.", style="red")
     exit()
 
-institutionProfileIds = list(map(lambda p: p['id'], profiles[0]['institutionProfiles']))
+institution_profile_ids = list(map(lambda p: p['id'], profiles[0]['institutionProfiles']))
 childrenIds = list(map(lambda p: p['id'], profiles[0]['children']))
 
 albumsToDownload = []
-albumsToDownload += getAlbumsToDownloadFromGallery(institutionProfileIds)
-albumsToDownload += getAlbumsToDownloadFromPosts(institutionProfileIds, childrenIds)
-albumsToDownload += getAlbumsToDownloadFromMessages()
+albumsToDownload += get_albums_to_download_from_gallery(institution_profile_ids)
+albumsToDownload += get_albums_to_download_from_posts(institution_profile_ids, childrenIds)
+albumsToDownload += get_albums_to_download_from_messages()
 
 print('Download Pictures...')
 for album in track(albumsToDownload, "Albums to download..."):
@@ -184,7 +184,7 @@ for album in track(albumsToDownload, "Albums to download..."):
         continue
     print('>', album, end=' ', flush=True)
     for picture in album.pictures:
-        if not tagsToFind or (picture['tags'] and pictureHasTags(picture, tagsToFind)):
+        if not tagsToFind or (picture['tags'] and picture_has_tags(picture, tagsToFind)):
             albumDirectoryName = album.creationDate.strftime('%Y%m%d') + ' ' + album.name
             albumDirectoryPath = os.path.join(outputDirectory, albumDirectoryName)
             file = picture['file']
@@ -199,4 +199,4 @@ for album in track(albumsToDownload, "Albums to download..."):
             os.makedirs(imageDirectoryPath, exist_ok=True)
             imagePath = os.path.join(imageDirectoryPath, file['name'])
             open(imagePath, "wb").write(imageResponse.content)
-            addExifCreationTime(imagePath, imageCreationTime)
+            add_exif_creation_time(imagePath, imageCreationTime)
