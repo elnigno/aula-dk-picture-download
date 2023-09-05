@@ -8,6 +8,7 @@ from rich.console import Console
 from datetime import datetime
 from aulaclient import AulaClient
 
+
 class AlbumToDownload:
     def __init__(self, name, type, creationDate, pictures):
         self.name = name
@@ -18,14 +19,18 @@ class AlbumToDownload:
     def __str__(self):
         return f"Type: {self.type}, CreationDate: {self.creationDate}, Pictures: {len(self.pictures)}, Name: {self.name}"
 
+
 def parseDate(dateString):
     return datetime.strptime(dateString.split('T')[0], '%Y-%m-%d').date()
+
 
 def parseDateTime(dateString):
     return datetime.strptime(dateString, '%Y-%m-%dT%H:%M:%S%z')
 
+
 def cleanTitle(title):
     return title.strip().replace('/', '_').replace(':', '_').replace('?', '_')
+
 
 def pictureHasTags(picture, tags):
     pictureTags = list(map(lambda t: t['name'], picture['tags']))
@@ -34,8 +39,9 @@ def pictureHasTags(picture, tags):
             return True
     return False
 
+
 def addExifCreationTime(imagePath, creationTime):
-    isJpeg=imagePath.lower().endswith(('.jpg', '.jpeg'))
+    isJpeg = imagePath.lower().endswith(('.jpg', '.jpeg'))
     if isJpeg:
         zeroth_ifd = {
             piexif.ImageIFD.DateTime: creationTime.strftime('%Y:%m:%d %H:%M:%S'),
@@ -43,13 +49,14 @@ def addExifCreationTime(imagePath, creationTime):
         exif_ifd = {
             piexif.ExifIFD.DateTimeOriginal: creationTime.strftime('%Y:%m:%d %H:%M:%S'),
         }
-        exif_dict = { "0th":zeroth_ifd, "Exif":exif_ifd }
+        exif_dict = {"0th": zeroth_ifd, "Exif": exif_ifd}
         exif_bytes = piexif.dump(exif_dict)
         piexif.insert(exif_bytes, imagePath)
 
+
 def getAlbumsToDownloadFromGallery(institutionProfileIds):
     print('Get Albums...')
-    additionalParams = { 'limit': 1000 }
+    additionalParams = {'limit': 1000}
     albumsToDownload = []
     albums = client.getAlbums(institutionProfileIds, additionalParams)
     albumsWithId = list(filter(lambda a: a['id'] is not None, albums))
@@ -65,9 +72,10 @@ def getAlbumsToDownloadFromGallery(institutionProfileIds):
             albumsToDownload.append(pa)
     return albumsToDownload
 
+
 def getAlbumsToDownloadFromPosts(institutionProfileIds, childrenIds):
     print('Get Posts...')
-    additionalParams = { 'limit': 1000 }
+    additionalParams = {'limit': 1000}
     albumsToDownload = []
     getPostsinstitutionProfileIds = institutionProfileIds + childrenIds
     posts = client.getPosts(getPostsinstitutionProfileIds, additionalParams)
@@ -83,9 +91,10 @@ def getAlbumsToDownloadFromPosts(institutionProfileIds, childrenIds):
             albumsToDownload.append(pa)
     return albumsToDownload
 
+
 def getAlbumsToDownloadFromMessages():
     print('Get Threads...')
-    threadsPageParam = { 'page': 0 }
+    threadsPageParam = {'page': 0}
     albumsToDownload = []
     threadsResponse = client.getThreads(threadsPageParam)
     threads = threadsResponse['threads']
@@ -95,14 +104,14 @@ def getAlbumsToDownloadFromMessages():
         threads += threadsResponse['threads']
         lastThreadUpdateTime = parseDateTime(threads[-1]['latestMessage']['sendDateTime'])
         if lastThreadUpdateTime.date() < cutoffDate:
-            break;
+            break
     for thread in threads:
         threadId = thread['id']
         threadLatestMessageTime = parseDateTime(thread['latestMessage']['sendDateTime'])
         isThreadUpdatedAfterCutoffDate = threadLatestMessageTime.date() >= cutoffDate
         if not isThreadUpdatedAfterCutoffDate:
-            break # Following threads won't be updated either, exit
-        pageParam = { 'page': 0 }
+            break  # Following threads won't be updated either, exit
+        pageParam = {'page': 0}
         messagesResponse = client.getMessagesForThread(threadId, pageParam)
         messages = messagesResponse['messages']
         while messagesResponse['moreMessagesExist']:
@@ -122,8 +131,9 @@ def getAlbumsToDownloadFromMessages():
                 albumsToDownload.append(pa)
     return albumsToDownload
 
+
 def printArguments(cutoffDate, tagsToFind, outputDirectory):
-    paramStyle="cyan"
+    paramStyle = "cyan"
     console.print("Parameters:", style=paramStyle)
     console.print(f"  outputDirectory: {outputDirectory}", style=paramStyle)
     console.print(f"  cutoffDate: {cutoffDate.strftime('%Y-%m-%d')}", style=paramStyle)
@@ -131,34 +141,63 @@ def printArguments(cutoffDate, tagsToFind, outputDirectory):
         console.print(f"  tags: {tagsToFind.__str__()}", style=paramStyle)
     console.print()
 
-def tryAppendAulaCookies(aulaCookies, browserName, cookieCallback):
+
+def tryAppendAulaCookies(aulaCookies, browserName):
     try:
-        cookies = cookieCallback()
+        cookies = getCookiesFromBrowser(browserName)
         aulaCookies.append(cookies)
         console.print(f"{browserName} cookies: [green]found[/]")
     except browser_cookie3.BrowserCookieError as error:
         console.print(f"{browserName} cookies: [yellow]not found[/]")
+    except:
+        console.print(f"{browserName} cookies: [red]Error occured[/]")
+
+
+def getCookiesFromBrowser(browserName):
+    domain = 'aula.dk'
+    if browserName == 'Chrome':
+        return browser_cookie3.chrome(domain_name=domain)
+    elif browserName == 'Chromium':
+        return browser_cookie3.chromium(domain_name=domain)
+    elif browserName == 'Opera':
+        return browser_cookie3.opera(domain_name=domain)
+    elif browserName == 'Opera GX':
+        return browser_cookie3.opera_gx(domain_name=domain)
+    elif browserName == 'Brave':
+        return browser_cookie3.brave(domain_name=domain)
+    elif browserName == 'Edge':
+        return browser_cookie3.edge(domain_name=domain)
+    elif browserName == 'Vivaldi':
+        return browser_cookie3.vivaldi(domain_name=domain)
+    elif browserName == 'Firefox':
+        return browser_cookie3.firefox(domain_name=domain)
+    elif browserName == 'Safari':
+        return browser_cookie3.safari(domain_name=domain)
+
 
 def getAulaCookies():
     aulaCookies = []
-    tryAppendAulaCookies(aulaCookies, 'Chrome', lambda: browser_cookie3.chrome(domain_name='aula.dk'))
-    tryAppendAulaCookies(aulaCookies, 'Chromium', lambda: browser_cookie3.chromium(domain_name='aula.dk'))
-    tryAppendAulaCookies(aulaCookies, 'Opera', lambda: browser_cookie3.opera(domain_name='aula.dk'))
-    tryAppendAulaCookies(aulaCookies, 'Opera GX', lambda: browser_cookie3.opera_gx(domain_name='aula.dk'))
-    tryAppendAulaCookies(aulaCookies, 'Brave', lambda: browser_cookie3.brave(domain_name='aula.dk'))
-    tryAppendAulaCookies(aulaCookies, 'Edge', lambda: browser_cookie3.edge(domain_name='aula.dk'))
-    tryAppendAulaCookies(aulaCookies, 'Vivaldi', lambda: browser_cookie3.vivaldi(domain_name='aula.dk'))
-    tryAppendAulaCookies(aulaCookies, 'Firefox', lambda: browser_cookie3.firefox(domain_name='aula.dk'))
-    tryAppendAulaCookies(aulaCookies, 'Safari', lambda: browser_cookie3.safari(domain_name='aula.dk'))
+    tryAppendAulaCookies(aulaCookies, 'Chrome')
+    tryAppendAulaCookies(aulaCookies, 'Chromium')
+    tryAppendAulaCookies(aulaCookies, 'Opera')
+    tryAppendAulaCookies(aulaCookies, 'Opera GX')
+    tryAppendAulaCookies(aulaCookies, 'Brave')
+    tryAppendAulaCookies(aulaCookies, 'Edge')
+    tryAppendAulaCookies(aulaCookies, 'Vivaldi')
+    tryAppendAulaCookies(aulaCookies, 'Firefox')
+    tryAppendAulaCookies(aulaCookies, 'Safari')
     return aulaCookies
+
 
 console = Console()
 
 # Parse arguments
 parser = argparse.ArgumentParser(description='Download images from aula.dk.')
 parser.add_argument('--outputFolder', required=True, default='output', help='Download images in this folder')
-parser.add_argument('--cutoffDate', required=True, help='Only download images that have been posted on or after this date (format: "YYYY-MM-DD")')
-parser.add_argument('--tags', required=False, nargs='+', help='Only download pictures having at least one of these tags')
+parser.add_argument('--cutoffDate', required=True,
+                    help='Only download images that have been posted on or after this date (format: "YYYY-MM-DD")')
+parser.add_argument('--tags', required=False, nargs='+',
+                    help='Only download pictures having at least one of these tags')
 args = parser.parse_args()
 
 cutoffDate = datetime.fromisoformat(args.cutoffDate).date()
@@ -189,7 +228,7 @@ print('Download Pictures...')
 for album in track(albumsToDownload, "Albums to download..."):
     if album.creationDate < cutoffDate:
         continue
-    print('>', album, end = ' ', flush = True)
+    print('>', album, end=' ', flush=True)
     for picture in album.pictures:
         if not tagsToFind or (picture['tags'] and pictureHasTags(picture, tagsToFind)):
             albumDirectoryName = album.creationDate.strftime('%Y%m%d') + ' ' + album.name
