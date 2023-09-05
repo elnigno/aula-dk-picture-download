@@ -2,8 +2,9 @@
 
 import requests
 
+
 class AulaClient:
-    baseUrl = 'https://www.aula.dk/api/v15/'
+    baseUrl = 'https://www.aula.dk/api/v17/'
     defaultLimit = 10
 
     def __init__(self, cookies):
@@ -26,7 +27,7 @@ class AulaClient:
 
         return response_profile['data']['profiles']
 
-    def getThreads(self, customParams = {}):
+    def getThreads(self, customParams={}):
         defaultParams = {
             'sortOn': 'date',
             'orderDirection': 'desc',
@@ -37,7 +38,7 @@ class AulaClient:
         response = self.__sendRequest(params)
         return response['data']
 
-    def getMessagesForThread(self, threadId, customParams = {}):
+    def getMessagesForThread(self, threadId, customParams={}):
         defaultParams = {
             'threadId': threadId,
             'page': 0
@@ -47,14 +48,14 @@ class AulaClient:
         response = self.__sendRequest(params)
         return response['data']
 
-    def getPosts(self, institutionProfileIds, customParams = {}):
+    def getPosts(self, institutionProfileIds, customParams={}):
         defaultParams = {
             'parent': 'profile',
             'index': 0,
             'limit': self.defaultLimit,
             'isUnread': False,
             'isImportant': False,
-            #'creatorPortalRole': '', # guardian, employee
+            # 'creatorPortalRole': '', # guardian, employee
             'ownPost': False,
             'institutionProfileIds[]': institutionProfileIds
         }
@@ -63,7 +64,7 @@ class AulaClient:
         response = self.__sendRequest(params)
         return response['data']['posts']
 
-    def getAlbums(self, institutionProfileIds, customParams = {}):
+    def getAlbums(self, institutionProfileIds, customParams={}):
         defaultParams = {
             'index': 0,
             'limit': self.defaultLimit,
@@ -77,7 +78,7 @@ class AulaClient:
         response = self.__sendRequest(params)
         return response['data']
 
-    def getPictures(self, institutionProfileIds, albumId, customParams = {}):
+    def getPictures(self, institutionProfileIds, albumId, customParams={}):
         defaultParams = {
             'albumId': albumId,
             'index': 0,
