@@ -8,14 +8,14 @@ class CookieFetcher:
         result = ''
         try:
             cookies = self.get_cookies_from_browser(browser_name)
-            if (cookies):
+            if cookies:
                 aula_cookies.append(cookies)
                 result = 'found'
             else:
                 result = 'notFound'
         except browser_cookie3.BrowserCookieError:
             result = 'notFound'
-        except:
+        except Exception:
             result = 'error'
 
         if result == 'notFound':
@@ -33,23 +33,26 @@ class CookieFetcher:
     def get_cookies_from_browser(self, browser_name):
         domain = 'aula.dk'
         if browser_name == 'Chrome':
-            return browser_cookie3.chrome(domain_name=domain)
+            cookies = browser_cookie3.chrome(domain_name=domain)
         elif browser_name == 'Chromium':
-            return browser_cookie3.chromium(domain_name=domain)
+            cookies = browser_cookie3.chromium(domain_name=domain)
         elif browser_name == 'Opera':
-            return browser_cookie3.opera(domain_name=domain)
+            cookies = browser_cookie3.opera(domain_name=domain)
         elif browser_name == 'Opera GX':
-            return browser_cookie3.opera_gx(domain_name=domain)
+            cookies = browser_cookie3.opera_gx(domain_name=domain)
         elif browser_name == 'Brave':
-            return browser_cookie3.brave(domain_name=domain)
+            cookies = browser_cookie3.brave(domain_name=domain)
         elif browser_name == 'Edge':
-            return browser_cookie3.edge(domain_name=domain)
+            cookies = browser_cookie3.edge(domain_name=domain)
         elif browser_name == 'Vivaldi':
-            return browser_cookie3.vivaldi(domain_name=domain)
+            cookies = browser_cookie3.vivaldi(domain_name=domain)
         elif browser_name == 'Firefox':
-            return browser_cookie3.firefox(domain_name=domain)
+            cookies = browser_cookie3.firefox(domain_name=domain)
         elif browser_name == 'Safari':
-            return browser_cookie3.safari(domain_name=domain)
+            cookies = browser_cookie3.safari(domain_name=domain)
+        else:
+            raise NotImplementedError("Browser not supported")
+        return cookies
 
     def get_aula_cookies(self):
         aula_cookies = []
