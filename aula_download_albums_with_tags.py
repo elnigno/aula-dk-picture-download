@@ -1,12 +1,12 @@
 import os
 import requests
-import browser_cookie3
 import piexif
 import argparse
 from rich.progress import track
 from rich.console import Console
 from datetime import datetime
 from aulaclient import AulaClient
+from cookiefetcher import CookieFetcher
 
 
 class AlbumToDownload:
@@ -142,53 +142,6 @@ def printArguments(cutoffDate, tagsToFind, outputDirectory):
     console.print()
 
 
-def tryAppendAulaCookies(aulaCookies, browserName):
-    try:
-        cookies = getCookiesFromBrowser(browserName)
-        aulaCookies.append(cookies)
-        console.print(f"{browserName} cookies: [green]found[/]")
-    except browser_cookie3.BrowserCookieError as error:
-        console.print(f"{browserName} cookies: [yellow]not found[/]")
-    except:
-        console.print(f"{browserName} cookies: [red]Error occured[/]")
-
-
-def getCookiesFromBrowser(browserName):
-    domain = 'aula.dk'
-    if browserName == 'Chrome':
-        return browser_cookie3.chrome(domain_name=domain)
-    elif browserName == 'Chromium':
-        return browser_cookie3.chromium(domain_name=domain)
-    elif browserName == 'Opera':
-        return browser_cookie3.opera(domain_name=domain)
-    elif browserName == 'Opera GX':
-        return browser_cookie3.opera_gx(domain_name=domain)
-    elif browserName == 'Brave':
-        return browser_cookie3.brave(domain_name=domain)
-    elif browserName == 'Edge':
-        return browser_cookie3.edge(domain_name=domain)
-    elif browserName == 'Vivaldi':
-        return browser_cookie3.vivaldi(domain_name=domain)
-    elif browserName == 'Firefox':
-        return browser_cookie3.firefox(domain_name=domain)
-    elif browserName == 'Safari':
-        return browser_cookie3.safari(domain_name=domain)
-
-
-def getAulaCookies():
-    aulaCookies = []
-    tryAppendAulaCookies(aulaCookies, 'Chrome')
-    tryAppendAulaCookies(aulaCookies, 'Chromium')
-    tryAppendAulaCookies(aulaCookies, 'Opera')
-    tryAppendAulaCookies(aulaCookies, 'Opera GX')
-    tryAppendAulaCookies(aulaCookies, 'Brave')
-    tryAppendAulaCookies(aulaCookies, 'Edge')
-    tryAppendAulaCookies(aulaCookies, 'Vivaldi')
-    tryAppendAulaCookies(aulaCookies, 'Firefox')
-    tryAppendAulaCookies(aulaCookies, 'Safari')
-    return aulaCookies
-
-
 console = Console()
 
 # Parse arguments
@@ -206,7 +159,8 @@ outputDirectory = args.outputFolder
 printArguments(cutoffDate, tagsToFind, outputDirectory)
 
 # Init Aula client
-aulaCookies = getAulaCookies()
+cookieFetcher = CookieFetcher()
+aulaCookies = cookieFetcher.getAulaCookies()
 client = AulaClient(aulaCookies)
 
 try:
