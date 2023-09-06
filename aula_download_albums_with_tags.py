@@ -197,7 +197,7 @@ def main():
                 album_directory_path = os.path.join(output_directory, album_directory_name)
                 file = picture['file']
                 image_creation_time = datetime.strptime(file['created'], '%Y-%m-%dT%H:%M:%S%z')
-                image_response = requests.get(file['url'])
+                image_response = requests.get(file['url'], timeout=30)
 
                 if image_creation_time.date() == album.creation_date:
                     image_directory_path = album_directory_path
@@ -207,7 +207,8 @@ def main():
 
                 os.makedirs(image_directory_path, exist_ok=True)
                 image_path = os.path.join(image_directory_path, file['name'])
-                open(image_path, "wb").write(image_response.content)
+                with open(image_path, "wb") as file:
+                    file.write(image_response.content)
                 add_exif_creation_time(image_path, image_creation_time)
 
 
