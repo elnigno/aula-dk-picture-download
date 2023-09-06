@@ -9,8 +9,8 @@ class AulaClient:
     defaultLimit = 10
 
     def __init__(self):
-        cookieFetcher = CookieFetcher()
-        cookies = cookieFetcher.get_aula_cookies()
+        cookie_fetcher = CookieFetcher()
+        cookies = cookie_fetcher.get_aula_cookies()
         self.session = requests.Session()
         self.all_cookies = cookies
 

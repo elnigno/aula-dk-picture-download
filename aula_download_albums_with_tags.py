@@ -1,10 +1,13 @@
+import argparse
 import os
+import sys
+from datetime import datetime
+
 import requests
 import piexif
-import argparse
 from rich.progress import track
 from rich.console import Console
-from datetime import datetime
+
 from aulaclient import AulaClient
 
 
@@ -141,12 +144,11 @@ def print_arguments(cutoff_ate, tags_to_find, output_directory):
     console.print(f"  outputDirectory: {output_directory}", style=param_style)
     console.print(f"  cutoffDate: {cutoff_ate.strftime('%Y-%m-%d')}", style=param_style)
     if tags_to_find:
-        console.print(f"  tags: {tags_to_find.__str__()}", style=param_style)
+        console.print(f"  tags: {tags_to_find}", style=param_style)
     console.print()
 
 
 def main():
-    # Parse arguments
     parser = argparse.ArgumentParser(description='Download images from aula.dk.')
     parser.add_argument(
         '--outputFolder',
@@ -174,14 +176,14 @@ def main():
     except Exception as error:
         console.print(error, style="red")
         console.print("Could not get profiles, exiting.", style="red")
-        exit()
+        sys.exit()
 
     institution_profile_ids = list(map(lambda p: p['id'], profiles[0]['institutionProfiles']))
-    childrenIds = list(map(lambda p: p['id'], profiles[0]['children']))
+    children_ids = list(map(lambda p: p['id'], profiles[0]['children']))
 
     albums_to_download = []
     albums_to_download += get_albums_to_download_from_gallery(institution_profile_ids, cutoff_date)
-    albums_to_download += get_albums_to_download_from_posts(institution_profile_ids, childrenIds, cutoff_date)
+    albums_to_download += get_albums_to_download_from_posts(institution_profile_ids, children_ids, cutoff_date)
     albums_to_download += get_albums_to_download_from_messages(cutoff_date)
 
     print('Download Pictures...')
@@ -198,15 +200,15 @@ def main():
                 image_response = requests.get(file['url'])
 
                 if image_creation_time.date() == album.creation_date:
-                    imageDirectoryPath = album_directory_path
+                    image_directory_path = album_directory_path
                 else:
                     folder_name = image_creation_time.strftime('%Y%m%d')
-                    imageDirectoryPath = os.path.join(album_directory_path, folder_name)
+                    image_directory_path = os.path.join(album_directory_path, folder_name)
 
-                os.makedirs(imageDirectoryPath, exist_ok=True)
-                imagePath = os.path.join(imageDirectoryPath, file['name'])
-                open(imagePath, "wb").write(image_response.content)
-                add_exif_creation_time(imagePath, image_creation_time)
+                os.makedirs(image_directory_path, exist_ok=True)
+                image_path = os.path.join(image_directory_path, file['name'])
+                open(image_path, "wb").write(image_response.content)
+                add_exif_creation_time(image_path, image_creation_time)
 
 
 if __name__ == '__main__':
