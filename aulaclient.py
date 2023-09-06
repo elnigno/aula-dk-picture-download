@@ -23,32 +23,45 @@ class AulaClient:
                 break
 
         if response_profile['status']['code'] == 448:
-            raise PermissionError("Cannot request profile, could be due to expired or missing cookies; try to log in.")
+            message = "Cannot request profile, could be due to expired or missing cookies; try to log in."
+            raise PermissionError(message)
 
         return response_profile['data']['profiles']
 
-    def get_threads(self, custom_params={}):
+    def get_threads(self, custom_params=None):
+        if custom_params is None:
+            custom_params = {}
         default_params = {
             'sortOn': 'date',
             'orderDirection': 'desc',
             'page': 0
         }
-        params = self.__merge_params(default_params, custom_params, 'messaging.getThreads')
+        params = self.__merge_params(
+            default_params,
+            custom_params,
+            'messaging.getThreads')
 
         response = self.__send_request(params)
         return response['data']
 
-    def get_messages_for_thread(self, thread_id, custom_params={}):
+    def get_messages_for_thread(self, thread_id, custom_params=None):
+        if custom_params is None:
+            custom_params = {}
         default_params = {
             'threadId': thread_id,
             'page': 0
         }
-        params = self.__merge_params(default_params, custom_params, 'messaging.getMessagesForThread')
+        params = self.__merge_params(
+            default_params,
+            custom_params,
+            'messaging.getMessagesForThread')
 
         response = self.__send_request(params)
         return response['data']
 
-    def get_posts(self, institution_profile_ids, custom_params={}):
+    def get_posts(self, institution_profile_ids, custom_params=None):
+        if custom_params is None:
+            custom_params = {}
         default_params = {
             'parent': 'profile',
             'index': 0,
@@ -59,12 +72,17 @@ class AulaClient:
             'ownPost': False,
             'institutionProfileIds[]': institution_profile_ids
         }
-        params = self.__merge_params(default_params, custom_params, 'posts.getAllPosts')
+        params = self.__merge_params(
+            default_params,
+            custom_params,
+            'posts.getAllPosts')
 
         response = self.__send_request(params)
         return response['data']['posts']
 
-    def get_albums(self, institution_profile_ids, custom_params={}):
+    def get_albums(self, institution_profile_ids, custom_params=None):
+        if custom_params is None:
+            custom_params = {}
         default_params = {
             'index': 0,
             'limit': self.defaultLimit,
@@ -73,12 +91,17 @@ class AulaClient:
             'filterBy': 'all',
             'filterInstProfileIds[]': institution_profile_ids
         }
-        params = self.__merge_params(default_params, custom_params, 'gallery.getAlbums')
+        params = self.__merge_params(
+            default_params,
+            custom_params,
+            'gallery.getAlbums')
 
         response = self.__send_request(params)
         return response['data']
 
-    def get_pictures(self, institution_profile_ids, album_id, custom_params={}):
+    def get_pictures(self, institution_profile_ids, album_id, custom_params=None):
+        if custom_params is None:
+            custom_params = {}
         default_params = {
             'albumId': album_id,
             'index': 0,
@@ -88,7 +111,10 @@ class AulaClient:
             'filterBy': 'all',
             'filterInstProfileIds[]': institution_profile_ids
         }
-        params = self.__merge_params(default_params, custom_params, 'gallery.getMedia')
+        params = self.__merge_params(
+            default_params,
+            custom_params,
+            'gallery.getMedia')
 
         response = self.__send_request(params)
         return response['data']['results']

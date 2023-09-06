@@ -13,11 +13,11 @@ class AlbumToDownload:
     def __init__(self, name, album_type, creation_date, pictures):
         self.name = name
         self.album_type = album_type
-        self.creationDate = creation_date
+        self.creation_date = creation_date
         self.pictures = pictures
 
     def __str__(self):
-        return f"Type: {self.album_type}, CreationDate: {self.creationDate}, Pictures: {len(self.pictures)}, Name: {self.name}"
+        return f"Type: {self.album_type}, CreationDate: {self.creation_date}, Pictures: {len(self.pictures)}, Name: {self.name}"
 
 
 def parse_date(date_string):
@@ -68,8 +68,8 @@ def get_albums_to_download_from_gallery(institution_profile_ids):
         pictures = client.get_pictures(institution_profile_ids, album['id'], additional_params)
         if pictures:
             name = clean_title(album['title'])
-            pa = AlbumToDownload(name, "Album", creation_date, pictures)
-            albums_to_download.append(pa)
+            album = AlbumToDownload(name, "Album", creation_date, pictures)
+            albums_to_download.append(album)
     return albums_to_download
 
 
@@ -87,8 +87,12 @@ def get_albums_to_download_from_posts(institution_profile_ids, children_ids):
         attachments_with_media = list(filter(lambda a: a['media'] is not None, post['attachments']))
         if attachments_with_media:
             name = clean_title(post['title'])
-            pa = AlbumToDownload(name, "Post", creation_date, list(map(lambda x: x['media'], attachments_with_media)))
-            albums_to_download.append(pa)
+            album = AlbumToDownload(
+                name,
+                "Post",
+                creation_date,
+                list(map(lambda x: x['media'], attachments_with_media)))
+            albums_to_download.append(album)
     return albums_to_download
 
 
@@ -127,8 +131,8 @@ def get_albums_to_download_from_messages():
             creation_date = parse_date(thread['startedTime'])
             pictures = list(map(lambda x: x['media'], attachments_with_media))
             if pictures:
-                pa = AlbumToDownload(name, "Message", creation_date, pictures)
-                albums_to_download.append(pa)
+                album = AlbumToDownload(name, "Message", creation_date, pictures)
+                albums_to_download.append(album)
     return albums_to_download
 
 
@@ -146,11 +150,20 @@ console = Console()
 
 # Parse arguments
 parser = argparse.ArgumentParser(description='Download images from aula.dk.')
-parser.add_argument('--outputFolder', required=True, default='output', help='Download images in this folder')
-parser.add_argument('--cutoffDate', required=True,
-                    help='Only download images that have been posted on or after this date (format: "YYYY-MM-DD")')
-parser.add_argument('--tags', required=False, nargs='+',
-                    help='Only download pictures having at least one of these tags')
+parser.add_argument(
+    '--outputFolder',
+    required=True,
+    default='output',
+    help='Download images in this folder')
+parser.add_argument(
+    '--cutoffDate',
+    required=True,
+    help='Only download images that have been posted on or after this date (format: "YYYY-MM-DD")')
+parser.add_argument(
+    '--tags',
+    required=False,
+    nargs='+',
+    help='Only download pictures having at least one of these tags')
 args = parser.parse_args()
 
 cutoffDate = datetime.fromisoformat(args.cutoffDate).date()
@@ -180,23 +193,24 @@ albumsToDownload += get_albums_to_download_from_messages()
 
 print('Download Pictures...')
 for album in track(albumsToDownload, "Albums to download..."):
-    if album.creationDate < cutoffDate:
+    if album.creation_date < cutoffDate:
         continue
     print('>', album, end=' ', flush=True)
     for picture in album.pictures:
         if not tagsToFind or (picture['tags'] and picture_has_tags(picture, tagsToFind)):
-            albumDirectoryName = album.creationDate.strftime('%Y%m%d') + ' ' + album.name
-            albumDirectoryPath = os.path.join(outputDirectory, albumDirectoryName)
+            album_directory_name = album.creation_date.strftime('%Y%m%d') + ' ' + album.name
+            album_directory_path = os.path.join(outputDirectory, album_directory_name)
             file = picture['file']
-            imageCreationTime = datetime.strptime(file['created'], '%Y-%m-%dT%H:%M:%S%z')
-            imageResponse = requests.get(file['url'])
+            image_creation_time = datetime.strptime(file['created'], '%Y-%m-%dT%H:%M:%S%z')
+            image_response = requests.get(file['url'])
 
-            if imageCreationTime.date() == album.creationDate:
-                imageDirectoryPath = albumDirectoryPath
+            if image_creation_time.date() == album.creation_date:
+                imageDirectoryPath = album_directory_path
             else:
-                imageDirectoryPath = os.path.join(albumDirectoryPath, imageCreationTime.strftime('%Y%m%d'))
+                folder_name = image_creation_time.strftime('%Y%m%d')
+                imageDirectoryPath = os.path.join(album_directory_path, folder_name)
 
             os.makedirs(imageDirectoryPath, exist_ok=True)
             imagePath = os.path.join(imageDirectoryPath, file['name'])
-            open(imagePath, "wb").write(imageResponse.content)
-            add_exif_creation_time(imagePath, imageCreationTime)
+            open(imagePath, "wb").write(image_response.content)
+            add_exif_creation_time(imagePath, image_creation_time)
