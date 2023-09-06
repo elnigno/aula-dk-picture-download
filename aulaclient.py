@@ -1,13 +1,16 @@
 # aulaclient.py
 
 import requests
+from cookiefetcher import CookieFetcher
 
 
 class AulaClient:
     baseUrl = 'https://www.aula.dk/api/v17/'
     defaultLimit = 10
 
-    def __init__(self, cookies):
+    def __init__(self):
+        cookieFetcher = CookieFetcher()
+        cookies = cookieFetcher.get_aula_cookies()
         self.session = requests.Session()
         self.all_cookies = cookies
 
