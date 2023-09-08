@@ -52,7 +52,8 @@ class AlbumToDownload:
         self.pictures = pictures
 
     def __str__(self):
-        return f"Type: {self.album_type}, CreationDate: {self.creation_date}, Pictures: {len(self.pictures)}, Name: {self.name}"
+        return f"Type: {self.album_type}, CreationDate: {self.creation_date}, '\
+            'Pictures: {len(self.pictures)}, Name: {self.name}"
 
 
 def parse_date(date_string):
@@ -209,7 +210,7 @@ def main():
 
     try:
         profiles = client.get_profiles()
-    except Exception as error:
+    except PermissionError as error:
         console.print(error, style="red")
         console.print("Could not get profiles, exiting.", style="red")
         sys.exit()

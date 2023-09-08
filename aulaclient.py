@@ -7,7 +7,7 @@ import requests
 
 class CookieFetcher:
     def try_append_aula_cookies(self, aula_cookies, browser_name):
-        result = ''
+        result = 'error'
         try:
             cookies = self.get_cookies_from_browser(browser_name)
             if cookies:
