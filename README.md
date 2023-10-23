@@ -14,7 +14,7 @@ Accepted parameters:
 
 The script saves images in folders, grouping them by album/post/message. The folders names follow the template "Date Title", where the date is in ISO format (yyyymmdd) and the title is the album/post/message title.
 
-Tested to work on Windows 10, after logging into aula.dk with Firefox and Chrome.
+Tested to work on Windows 10, after logging into aula.dk with MitID on Firefox and Chrome.
 
 This script was initially inspired by this blog post: https://helmstedt.dk/2021/05/aulas-api-en-opdatering/
 
@@ -22,3 +22,7 @@ This script was initially inspired by this blog post: https://helmstedt.dk/2021/
 ```bash
 python .\aula_download_albums_with_tags.py --cutoffDate "2023-02-19" --tags "Tag1" "Tag2" --outputFolder "output"
 ```
+
+## Known issues
+
+The script might crash if you login with unilogin and attempt to download images from messages marked as sensitive. The issue does not occur when logging in with MitID, so use that if possible. 
