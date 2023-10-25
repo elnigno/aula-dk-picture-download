@@ -17,8 +17,9 @@ class CookieFetcher:
                 result = 'notFound'
         except browser_cookie3.BrowserCookieError:
             result = 'notFound'
-        except Exception:
+        except Exception as e:
             result = 'error'
+            self.__print(e.args)
 
         if result == 'notFound':
             message = "[yellow]not found[/]"
@@ -29,8 +30,7 @@ class CookieFetcher:
         else:
             message = "[red]unknown error occured[/]"
 
-        console = Console()
-        console.print(f"{browser_name} cookies: {message}")
+        self.__print(f"{browser_name} cookies: {message}")
 
     def get_cookies_from_browser(self, browser_name):
         domain = 'aula.dk'
@@ -68,6 +68,10 @@ class CookieFetcher:
         self.try_append_aula_cookies(aula_cookies, 'Firefox')
         self.try_append_aula_cookies(aula_cookies, 'Safari')
         return aula_cookies
+    
+    def __print(self, message):
+        console = Console()
+        console.print(message)
 
 
 class AulaClient:
