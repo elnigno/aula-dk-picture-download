@@ -68,14 +68,14 @@ class CookieFetcher:
         self.try_append_aula_cookies(aula_cookies, 'Firefox')
         self.try_append_aula_cookies(aula_cookies, 'Safari')
         return aula_cookies
-    
+
     def __print(self, message):
         console = Console()
         console.print(message)
 
 
 class AulaClient:
-    baseUrl = 'https://www.aula.dk/api/v17/'
+    baseUrl = 'https://www.aula.dk/api/v18/'
     defaultLimit = 10
 
     def __init__(self):
