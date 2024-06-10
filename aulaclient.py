@@ -75,7 +75,7 @@ class CookieFetcher:
 
 
 class AulaClient:
-    baseUrl = 'https://www.aula.dk/api/v18/'
+    baseUrl = 'https://www.aula.dk/api/v19/'
     defaultLimit = 10
 
     def __init__(self):
