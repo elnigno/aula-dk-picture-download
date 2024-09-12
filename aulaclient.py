@@ -1,6 +1,7 @@
 # aulaclient.py
 
 import browser_cookie3
+import requests.cookies
 from rich.console import Console
 import requests
 
@@ -78,11 +79,19 @@ class AulaClient:
     baseUrl = 'https://www.aula.dk/api/v19/'
     defaultLimit = 10
 
-    def __init__(self):
-        cookie_fetcher = CookieFetcher()
-        cookies = cookie_fetcher.get_aula_cookies()
+    def __init__(self, apiVersion=19, cookieString=None):
+        if not cookieString:
+            cookie_fetcher = CookieFetcher()
+            cookies = cookie_fetcher.get_aula_cookies()
+            self.all_cookies = cookies
+        else:
+            jar = requests.cookies.RequestsCookieJar()
+            cookie = requests.cookies.create_cookie(domain='aula.dk', name='aula', value=cookieString)
+            jar.set_cookie(cookie)
+            self.all_cookies = [jar]
+
         self.session = requests.Session()
-        self.all_cookies = cookies
+        self.baseUrl = f'https://www.aula.dk/api/v{apiVersion}/'
 
     def get_profiles(self):
         params = {
