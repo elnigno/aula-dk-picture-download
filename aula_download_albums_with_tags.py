@@ -31,7 +31,7 @@ class Arguments:
         parser.add_argument(
             '--apiVersion',
             required=False,
-            default=20,
+            default=21,
             help='Aula API version')
         parser.add_argument(
             '--cookie',
