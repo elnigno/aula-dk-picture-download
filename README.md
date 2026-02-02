@@ -11,7 +11,7 @@ Accepted parameters:
 - `--cutoffDate CUTOFFDATE` Only download images that have been posted on or after this date (format: "YYYY-MM-DD")
 - `--outputFolder OUTPUTFOLDER` Download images in this folder
 - `--tags TAGS [TAGS ...]` (Optional) Only download pictures having at least one of these tags
-- `--apiVersion APIVERSION` (Optional, default=19) Select the Aula API version
+- `--apiVersion APIVERSION` (Optional, default=22) Select the Aula API version
 - `--cookie COOKIE` (Optional) Session cookie from the browser for authentication, wrapped in double quotes (**"**)
 
 The script saves images in folders, grouping them by album/post/message. The folders names follow the template "Date Title", where the date is in ISO format (yyyymmdd) and the title is the album/post/message title.
